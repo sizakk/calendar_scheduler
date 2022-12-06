@@ -5,10 +5,12 @@ import 'package:flutter/services.dart';
 class CustomTextField extends StatelessWidget {
   final String label;
   final bool isTime;
+  final FormFieldSetter<String> onSaved;
 
   const CustomTextField({
     required this.isTime,
     required this.label,
+    required this.onSaved,
     Key? key,
   }) : super(key: key);
 
@@ -28,7 +30,28 @@ class CustomTextField extends StatelessWidget {
   }
 
   Widget renderTextField(){
-    return TextField(
+    return TextFormField(
+      onSaved: onSaved,
+      validator: (String? val){
+        if(val == null || val.isEmpty){
+          return 'Input Values';
+        }
+
+        if(isTime){
+          int time = int.parse(val!);
+
+          if(time < 0){
+            return 'bigger than 0';
+          }
+          if(time > 24){
+            return 'less than 24';
+          }
+        }else{
+
+        }
+
+        return null;
+      },
       keyboardType: isTime ? TextInputType.number : TextInputType.multiline,
       inputFormatters: isTime
           ? [
