@@ -1,6 +1,9 @@
 import 'package:calendar_scheduler/component/customTextField.dart';
 import 'package:calendar_scheduler/constant/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import '../model/categoryColor.dart';
+import 'package:calendar_scheduler/database/driftDatabase.dart';
 
 class ScheduleBottomSheet extends StatefulWidget {
   const ScheduleBottomSheet({Key? key}) : super(key: key);
@@ -18,10 +21,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery
-        .of(context)
-        .viewInsets
-        .bottom;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return GestureDetector(
       onTap: () {
@@ -29,10 +29,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
       },
       child: SafeArea(
         child: Container(
-          height: MediaQuery
-              .of(context)
-              .size
-              .height / 2 + bottomInset,
+          height: MediaQuery.of(context).size.height / 2 + bottomInset,
           color: Colors.white,
           child: Padding(
             padding: EdgeInsets.only(bottom: bottomInset),
@@ -45,21 +42,38 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _Time(
-                      onStartSaved: (String? val){
+                      onStartSaved: (String? val) {
                         startTime = int.parse(val!);
                       },
-                      onEndSaved: (String? val){
+                      onEndSaved: (String? val) {
                         endTime = int.parse(val!);
                       },
                     ),
                     SizedBox(height: 16),
                     _Content(
-                      onSaved: (String? val){
+                      onSaved: (String? val) {
                         content = val;
                       },
                     ),
                     SizedBox(height: 16),
-                    _ColorPicker(),
+                    FutureBuilder<List<CategoryColor>>(
+                        future: GetIt.I<LocalDatabase>().getCatedoryColors(),
+                        builder: (context, snapshot) {
+                          return _ColorPicker(
+                            colors: snapshot.hasData
+                                ? snapshot.data!
+                                    .map(
+                                      (e) => Color(
+                                        int.parse(
+                                          'FF${e.hexCode}',
+                                          radix: 16,
+                                        ),
+                                      ),
+                                    )
+                                    .toList()
+                                : [],
+                          );
+                        }),
                     SizedBox(height: 8),
                     _SaveButton(
                       onPressed: onSavePressed,
@@ -82,7 +96,6 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
     if (formKey.currentState!.validate()) {
       print('no erroe');
       formKey.currentState!.save();
-
     } else {
       print('error');
     }
@@ -96,7 +109,8 @@ class _Time extends StatelessWidget {
   const _Time({
     required this.onStartSaved,
     required this.onEndSaved,
-    Key? key,}) : super(key: key);
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -104,18 +118,19 @@ class _Time extends StatelessWidget {
       children: [
         Expanded(
             child: CustomTextField(
-              label: '시작 시간',
-              isTime: true,
-              onSaved:onStartSaved,)),
+          label: '시작 시간',
+          isTime: true,
+          onSaved: onStartSaved,
+        )),
         SizedBox(
           width: 16,
         ),
         Expanded(
             child: CustomTextField(
-              label: '마감 시간',
-              isTime: true,
-              onSaved:onEndSaved,
-            ))
+          label: '마감 시간',
+          isTime: true,
+          onSaved: onEndSaved,
+        ))
       ],
     );
   }
@@ -135,28 +150,26 @@ class _Content extends StatelessWidget {
       child: CustomTextField(
         label: '내용',
         isTime: false,
-        onSaved:onSaved,
+        onSaved: onSaved,
       ),
     );
   }
 }
 
 class _ColorPicker extends StatelessWidget {
-  const _ColorPicker({Key? key}) : super(key: key);
+  final List<Color> colors;
+
+  const _ColorPicker({
+    required this.colors,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
       runSpacing: 10,
       spacing: 8,
-      children: [
-        renderColor(Colors.red),
-        renderColor(Colors.orange),
-        renderColor(Colors.yellow),
-        renderColor(Colors.green),
-        renderColor(Colors.indigo),
-        renderColor(Colors.purple),
-      ],
+      children: colors.map((e) => renderColor(e)).toList(),
     );
   }
 

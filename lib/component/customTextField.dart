@@ -38,7 +38,7 @@ class CustomTextField extends StatelessWidget {
         }
 
         if(isTime){
-          int time = int.parse(val!);
+          int time = int.parse(val);
 
           if(time < 0){
             return 'bigger than 0';
