@@ -58,7 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
           isScrollControlled: true,
             context: context,
             builder: (_){
-              return ScheduleBottomSheet();
+              return ScheduleBottomSheet(
+                selectedDate: selectedDay,
+              );
             }
         );
       },
