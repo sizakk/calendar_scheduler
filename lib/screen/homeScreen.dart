@@ -1,7 +1,9 @@
 import 'package:calendar_scheduler/component/calendar.dart';
 import 'package:calendar_scheduler/component/todayBanner.dart';
 import 'package:calendar_scheduler/constant/colors.dart';
+import 'package:calendar_scheduler/database/driftDatabase.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
 import '../component/newScheduleBottomSheet.dart';
 import '../component/scheduleCard.dart';
@@ -14,14 +16,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  DateTime selectedDay =
-  DateTime(DateTime
-      .now()
-      .year, DateTime
-      .now()
-      .month, DateTime
-      .now()
-      .day);
+  DateTime selectedDay = DateTime.utc(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+  );
 
   DateTime focusedDay = DateTime.now();
 
@@ -35,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Calendar(
                 selectedDay: selectedDay,
                 focusedDay: focusedDay,
-                onDaySelected: onDaySelcted,
+                onDaySelected: onDaySelected,
               ),
               SizedBox(
                 height: 8,
@@ -44,31 +43,32 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 height: 8,
               ),
-              _ScheduleList()
+              _ScheduleList(
+                selectedDate: selectedDay,
+              )
             ],
           ),
         ));
   }
 
-  FloatingActionButton renderFloatingActionButton(){
+  FloatingActionButton renderFloatingActionButton() {
     return FloatingActionButton(
       backgroundColor: PRIMARY_COLOR,
-      onPressed: (){
+      onPressed: () {
         showModalBottomSheet(
-          isScrollControlled: true,
+            isScrollControlled: true,
             context: context,
-            builder: (_){
+            builder: (_) {
               return ScheduleBottomSheet(
                 selectedDate: selectedDay,
               );
-            }
-        );
+            });
       },
-        child: Icon(Icons.add),
+      child: Icon(Icons.add),
     );
   }
 
-  onDaySelcted(DateTime selectedDay, DateTime focusedDay) {
+  onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     print(selectedDay);
     setState(() {
       this.selectedDay = selectedDay;
@@ -78,30 +78,56 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _ScheduleList extends StatelessWidget {
-  const _ScheduleList({Key? key}) : super(key: key);
+  final DateTime selectedDate;
+
+  const _ScheduleList({
+    required this.selectedDate,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: ListView.separated(
-          itemCount: 5,
-          separatorBuilder: (context, index) {
-            return SizedBox(
-              height: 8,
-            );
-          },
-          itemBuilder: (context, index) {
-            return ScheduleCard(
-                startTime: 8,
-                endTime: 13,
-                content: '프로그래밍. $index',
-                color: Colors.red);
-          },
-        ),
+        child: StreamBuilder<List<Schedule>>(
+            stream: GetIt.I<LocalDatabase>().watchSchedules(
+              selectedDate
+            ),
+            builder: (context, snapshot) {
+              if(!snapshot.hasData){
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              if (snapshot.hasData && snapshot.data!.isEmpty){
+                return Center(
+                  child: Text('No Data'),
+                );
+              }
+
+
+              return ListView.separated(
+                itemCount: snapshot.data!.length,
+                separatorBuilder: (context, index) {
+                  return SizedBox(
+                    height: 8,
+                  );
+                },
+                itemBuilder: (context, index) {
+                  final schedule = snapshot.data![index];
+
+                  return ScheduleCard(
+                    startTime: schedule.startTime,
+                    endTime: schedule.endTime,
+                    content: schedule.content,
+                    color: Colors.red,
+                  );
+                },
+              );
+            }),
       ),
     );
   }
 }
-

@@ -64,7 +64,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                     ),
                     SizedBox(height: 16),
                     FutureBuilder<List<CategoryColor>>(
-                        future: GetIt.I<LocalDatabase>().getCatedoryColors(),
+                        future: GetIt.I<LocalDatabase>().getCategoryColors(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData &&
                               selectedColorId == null &&

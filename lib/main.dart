@@ -32,7 +32,7 @@ void main() async {
 
   GetIt.I.registerSingleton<LocalDatabase>(database);
 
-  final colors = await database.getCatedoryColors();
+  final colors = await database.getCategoryColors();
 
   if (colors.isEmpty) {
     for (String hexCode in DEFAULT_COLORS) {

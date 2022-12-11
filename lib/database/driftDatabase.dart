@@ -24,8 +24,11 @@ class LocalDatabase extends _$LocalDatabase {
   Future<int> createCategoryColor(CategoryColorsCompanion data) =>
       into(categoryColors).insert(data);
 
-  Future<List<CategoryColor>> getCatedoryColors() =>
+  Future<List<CategoryColor>> getCategoryColors() =>
       select(categoryColors).get();
+
+  Stream<List<Schedule>> watchSchedules(DateTime date) =>
+      (select(schedules)..where((tbl) => tbl.date.equals(date))).watch();
 
   @override
   int get schemaVersion => 1;
