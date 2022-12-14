@@ -2,6 +2,7 @@ import 'package:calendar_scheduler/component/calendar.dart';
 import 'package:calendar_scheduler/component/todayBanner.dart';
 import 'package:calendar_scheduler/constant/colors.dart';
 import 'package:calendar_scheduler/database/driftDatabase.dart';
+import 'package:calendar_scheduler/model/scheduleWithColor.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -39,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 height: 8,
               ),
-              TodayBanner(selectedDay: selectedDay, scheduleCount: 3),
+              TodayBanner(selectedDay: selectedDay),
               SizedBox(
                 height: 8,
               ),
@@ -90,7 +91,7 @@ class _ScheduleList extends StatelessWidget {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: StreamBuilder<List<Schedule>>(
+        child: StreamBuilder<List<ScheduleWithColor>>(
             stream: GetIt.I<LocalDatabase>().watchSchedules(
               selectedDate
             ),
@@ -116,13 +117,15 @@ class _ScheduleList extends StatelessWidget {
                   );
                 },
                 itemBuilder: (context, index) {
-                  final schedule = snapshot.data![index];
+                  final scheduleWithColor = snapshot.data![index];
 
                   return ScheduleCard(
-                    startTime: schedule.startTime,
-                    endTime: schedule.endTime,
-                    content: schedule.content,
-                    color: Colors.red,
+                    startTime: scheduleWithColor.schedule.startTime,
+                    endTime: scheduleWithColor.schedule.endTime,
+                    content: scheduleWithColor.schedule.content,
+                    color: Color(
+                      int.parse('FF${scheduleWithColor.categoryColor.hexCode}', radix: 16)
+                    )
                   );
                 },
               );
