@@ -4,11 +4,14 @@ import 'package:flutter/services.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
+  final String initialValue;
+
   final bool isTime;
   final FormFieldSetter<String> onSaved;
 
   const CustomTextField({
     required this.isTime,
+    required this.initialValue,
     required this.label,
     required this.onSaved,
     Key? key,
@@ -29,43 +32,43 @@ class CustomTextField extends StatelessWidget {
     );
   }
 
-  Widget renderTextField(){
+  Widget renderTextField() {
     return TextFormField(
       onSaved: onSaved,
-      validator: (String? val){
-        if(val == null || val.isEmpty){
+      validator: (String? val) {
+        if (val == null || val.isEmpty) {
           return 'Input Values';
         }
 
-        if(isTime){
+        if (isTime) {
           int time = int.parse(val);
 
-          if(time < 0){
+          if (time < 0) {
             return 'bigger than 0';
           }
-          if(time > 24){
+          if (time > 24) {
             return 'less than 24';
           }
-        }else{
-
-        }
+        } else {}
 
         return null;
       },
       keyboardType: isTime ? TextInputType.number : TextInputType.multiline,
       inputFormatters: isTime
           ? [
-        FilteringTextInputFormatter.digitsOnly,
-      ]
+              FilteringTextInputFormatter.digitsOnly,
+            ]
           : [],
       maxLines: isTime ? 1 : null,
       expands: isTime ? false : true,
+      initialValue: initialValue,
       cursorColor: Colors.grey,
       decoration: InputDecoration(
-          border: InputBorder.none,
-          filled: true,
-          fillColor: Colors.grey[300]),
+        border: InputBorder.none,
+        filled: true,
+        fillColor: Colors.grey[300],
+        suffixText: isTime ? '시' : null,
+      ),
     );
   }
-
 }

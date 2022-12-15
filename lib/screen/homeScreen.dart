@@ -18,9 +18,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime selectedDay = DateTime.utc(
-    DateTime.now().year,
-    DateTime.now().month,
-    DateTime.now().day,
+    DateTime
+        .now()
+        .year,
+    DateTime
+        .now()
+        .month,
+    DateTime
+        .now()
+        .day,
   );
 
   DateTime focusedDay = DateTime.now();
@@ -93,16 +99,16 @@ class _ScheduleList extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: StreamBuilder<List<ScheduleWithColor>>(
             stream: GetIt.I<LocalDatabase>().watchSchedules(
-              selectedDate
+                selectedDate
             ),
             builder: (context, snapshot) {
-              if(!snapshot.hasData){
+              if (!snapshot.hasData) {
                 return Center(
                   child: CircularProgressIndicator(),
                 );
               }
 
-              if (snapshot.hasData && snapshot.data!.isEmpty){
+              if (snapshot.hasData && snapshot.data!.isEmpty) {
                 return Center(
                   child: Text('No Data'),
                 );
@@ -119,13 +125,35 @@ class _ScheduleList extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final scheduleWithColor = snapshot.data![index];
 
-                  return ScheduleCard(
-                    startTime: scheduleWithColor.schedule.startTime,
-                    endTime: scheduleWithColor.schedule.endTime,
-                    content: scheduleWithColor.schedule.content,
-                    color: Color(
-                      int.parse('FF${scheduleWithColor.categoryColor.hexCode}', radix: 16)
-                    )
+                  return Dismissible(
+                    key: ObjectKey(scheduleWithColor.schedule.id),
+                    direction: DismissDirection.endToStart,
+                    onDismissed: (DismissDirection direction) {
+                      GetIt.I<LocalDatabase>().removeSchedule(
+                          scheduleWithColor.schedule.id);
+                    },
+                    child: GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (_) {
+                            return ScheduleBottomSheet(
+                              selectedDate: selectedDate,
+                              scheduleId: scheduleWithColor.schedule.id,);
+                          },
+                        );
+                      },
+                      child: ScheduleCard(
+                          startTime: scheduleWithColor.schedule.startTime,
+                          endTime: scheduleWithColor.schedule.endTime,
+                          content: scheduleWithColor.schedule.content,
+                          color: Color(
+                              int.parse('FF${scheduleWithColor.categoryColor
+                                  .hexCode}', radix: 16)
+                          )
+                      ),
+                    ),
                   );
                 },
               );
